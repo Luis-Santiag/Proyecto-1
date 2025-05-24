@@ -12,7 +12,7 @@ namespace Mi_chatGpt
 {
     public partial class Form1 : Form
     {
-        private string apiKey = "clave Aqui"; // Reemplaza con tu clave de OpenAI
+        private string apiKey = "Clave "; // Reemplaza con tu clave de OpenAI
         private string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SqlServerConn"].ConnectionString;
         private string respuestaApi = string.Empty;
         private OpenAIAPI openAiApi;
@@ -74,7 +74,7 @@ namespace Mi_chatGpt
                 var chatRequest = openAiApi.Chat.CreateConversation();
                 chatRequest.AppendUserInput(prompt);
                 chatRequest.RequestParameters.Model = "gpt-3.5-turbo"; // Usa GPT-3.5-turbo para costos bajos
-                chatRequest.RequestParameters.MaxTokens = 1000; // Límite de tokens en la respuesta
+                chatRequest.RequestParameters.MaxTokens = 500; // Límite de tokens en la respuesta
                 chatRequest.RequestParameters.Temperature = 0.7; // Controla la creatividad (0 a 1)
 
                 var response = await chatRequest.GetResponseFromChatbotAsync();
@@ -115,46 +115,103 @@ namespace Mi_chatGpt
         // Generar Word y PowerPoint
         private string GenerarArchivos(string prompt, string respuesta)
         {
-            string carpeta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), $"Investigacion_{DateTime.Now:yyyyMMdd_HHmmss}");
-            Directory.CreateDirectory(carpeta);
+            try
+            {
+                if (string.IsNullOrEmpty(prompt) || string.IsNullOrEmpty(respuesta))
+                {
+                    MessageBox.Show("El prompt o la respuesta están vacíos."); // Esto aún muestra un mensaje
+                    return string.Empty;
+                }
 
-            // Generar Word
-            string wordPath = Path.Combine(carpeta, "Investigacion.docx");
-            GenerarDocumentoWord(wordPath, prompt, respuesta);
+                
 
-            // Generar PowerPoint
-            string pptPath = Path.Combine(carpeta, "Investigacion.pptx");
-            GenerarPresentacionPowerPoint(pptPath, prompt, respuesta);
+                string carpeta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Investigacion_{DateTime.Now:yyyyMMdd_HHmmss}");
+                Directory.CreateDirectory(carpeta);
 
-            return carpeta;
+                string wordPath = Path.Combine(carpeta, "Investigacion.docx");
+                
+                GenerarDocumentoWord(wordPath, prompt, respuesta);
+
+                string pptPath = Path.Combine(carpeta, "Investigacion.pptx");
+               
+                GenerarPresentacionPowerPoint(pptPath, prompt, respuesta);
+
+                return carpeta;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al generar archivos: {ex.Message}\n{ex.StackTrace}"); // Esto aún muestra un mensaje
+                return string.Empty;
+            }
         }
 
         // Generar documento Word usando plantilla
         private void GenerarDocumentoWord(string path, string prompt, string respuesta)
         {
-            Word.Application wordApp = new Word.Application();
-            Word.Document doc;
+            Word.Application wordApp = null;
+            Word.Document doc = null;
 
             try
             {
-                // Cargar plantilla (crear un .dotx con marcadores {Prompt} y {Respuesta})
-                string plantillaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PlantillaInvestigacion.dotx");
-                doc = wordApp.Documents.Add(plantillaPath);
+                wordApp = new Word.Application();
+                wordApp.Visible = false; 
+                wordApp.DisplayAlerts = Word.WdAlertLevel.wdAlertsNone; // Deshabilitar alertas
 
-                // Reemplazar marcadores
-                doc.Content.Find.Execute(FindText: "{Prompt}", ReplaceWith: prompt, Replace: Word.WdReplace.wdReplaceAll);
-                doc.Content.Find.Execute(FindText: "{Respuesta}", ReplaceWith: respuesta, Replace: Word.WdReplace.wdReplaceAll);
+                MessageBox.Show("Creando un nuevo documento Word..."); // Solo para depuración, quítalo si es automático
+                doc = wordApp.Documents.Add(); // Crear documento en blanco
 
+                // Agregar contenido directamente
+                MessageBox.Show("Agregando contenido al documento..."); // Solo para depuración
+                Word.Paragraph para1 = doc.Content.Paragraphs.Add();
+                para1.Range.Text = "Título de la Investigación:";
+                para1.Range.Font.Bold = 1; // Negrita
+                para1.Range.InsertParagraphAfter();
+
+                Word.Paragraph para2 = doc.Content.Paragraphs.Add();
+                para2.Range.Text = prompt ?? "";
+                para2.Range.InsertParagraphAfter();
+
+                Word.Paragraph para3 = doc.Content.Paragraphs.Add();
+                para3.Range.Text = "Resultados:";
+                para3.Range.Font.Bold = 1;
+                para3.Range.InsertParagraphAfter();
+
+                // Dividir la respuesta en partes de 5000 caracteres
+                const int chunkSize = 5000;
+                int startIndex = 0;
+                while (startIndex < respuesta.Length)
+                {
+                    int length = Math.Min(chunkSize, respuesta.Length - startIndex);
+                    string chunk = respuesta.Substring(startIndex, length);
+                    Word.Paragraph para = doc.Content.Paragraphs.Add();
+                    para.Range.Text = chunk;
+                    para.Range.InsertParagraphAfter();
+                    startIndex += length;
+                }
+
+                MessageBox.Show($"Guardando documento en: {path}"); // Solo para depuración
                 doc.SaveAs2(path);
                 doc.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al generar Word: " + ex.Message);
+                MessageBox.Show($"Error al generar Word: {ex.Message}\n{ex.StackTrace}");
             }
             finally
             {
-                wordApp.Quit();
+                if (wordApp != null)
+                {
+                    try
+                    {
+                        wordApp.DisplayAlerts = Word.WdAlertLevel.wdAlertsAll; // Restaurar alertas
+                        wordApp.Quit(); // Cerrar Word
+                    }
+                    catch { }
+                }
+                if (doc != null)
+                {
+                    try { doc.Close(false); } catch { }
+                }
             }
         }
 

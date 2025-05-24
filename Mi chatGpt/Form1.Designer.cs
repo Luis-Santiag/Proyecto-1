@@ -62,6 +62,7 @@
             this.btnInvestigar.TabIndex = 2;
             this.btnInvestigar.Text = "Investigar";
             this.btnInvestigar.UseVisualStyleBackColor = true;
+            this.btnInvestigar.Click += new System.EventHandler(this.btnInvestigar_Click);
             // 
             // btnAprobar
             // 
@@ -71,6 +72,7 @@
             this.btnAprobar.TabIndex = 3;
             this.btnAprobar.Text = "Aprobar";
             this.btnAprobar.UseVisualStyleBackColor = true;
+            this.btnAprobar.Click += new System.EventHandler(this.btnAprobar_Click);
             // 
             // btnEditar
             // 
@@ -80,15 +82,15 @@
             this.btnEditar.TabIndex = 4;
             this.btnEditar.Text = "Editar";
             this.btnEditar.UseVisualStyleBackColor = true;
+            this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
             // 
             // lblEstado
             // 
             this.lblEstado.AutoSize = true;
             this.lblEstado.Location = new System.Drawing.Point(526, 321);
             this.lblEstado.Name = "lblEstado";
-            this.lblEstado.Size = new System.Drawing.Size(44, 16);
+            this.lblEstado.Size = new System.Drawing.Size(0, 16);
             this.lblEstado.TabIndex = 5;
-            this.lblEstado.Text = "label1";
             // 
             // Form1
             // 
