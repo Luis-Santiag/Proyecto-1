@@ -1,0 +1,32 @@
+﻿# Ignorar archivos de Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Archivos temporales
+*.log
+*.tmp
+*.bak
+
+# Archivos binarios y de compilación
+bin/
+obj/
+
+# Ignorar configuraciones locales
+*.dbmdl
+*.pdb
+
+# Ignorar carpetas específicas
+TestResults/
+# Ignorar archivos de Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignorar carpetas de compilación
+bin/
+obj/
